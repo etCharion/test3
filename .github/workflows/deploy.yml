@@ -2,7 +2,8 @@ name: Nasazení na GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # main i master – podle toho, jak se repozitář založí.
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
