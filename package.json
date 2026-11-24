@@ -1,16 +1,20 @@
 {
-  "name": "scaner-knihovny",
+  "name": "skener-knihovny",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Mobilní skener ISBN pro doplňování knih do knihovny (katalog Knihovny.cz, export do Excelu)",
   "scripts": {
     "dev": "vite --host",
+    "predev": "node scripts/make-icons.mjs",
     "build": "vite build",
+    "prebuild": "node scripts/make-icons.mjs",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "icons": "node scripts/make-icons.mjs",
+    "e2e": "node scripts/e2e-check.mjs"
   },
   "dependencies": {
     "@zxing/library": "^0.23.0",
