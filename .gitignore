@@ -9,6 +9,9 @@ Thumbs.db
 .env.*
 !.env.example
 
+# Ikony se generují při buildu (scripts/make-icons.mjs), v repu nemají co dělat.
+public/icons/
+
 # Dočasné soubory kontrol a exportů
 tmp/
 test-results/
