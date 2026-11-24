@@ -10,7 +10,7 @@
 const ISBN_CHARS = /[0-9Xx]/;
 
 /** Odstraní vše kromě číslic a X, velká X sjednotí. */
-export function stripIsbn(raw: string): string {
+export function stripIsbn(raw: string | null | undefined): string {
   return (raw ?? '').replace(/[^0-9Xx]/g, '').toUpperCase();
 }
 
@@ -54,6 +54,25 @@ export function isbn10To13(value: string): string | null {
   if (!isValidIsbn10(s)) return null;
   const core = '978' + s.slice(0, 9);
   return core + String(isbn13CheckDigit(core));
+}
+
+/**
+ * Převod ISBN-13 na ISBN-10 (jen pro prefix 978; 979 desetimístný tvar nemá).
+ *
+ * Katalog zná část starších knih jen pod desetimístným ISBN – dotaz třinácti
+ * číslicemi u nich nic nenajde. Proto se jako záložní tvar posílá tohle číslo.
+ * Vrací null, když z čísla ISBN-10 udělat nelze.
+ */
+export function isbn13ToIsbn10(value: string | null | undefined): string | null {
+  const s = stripIsbn(value);
+  if (!/^978\d{10}$/.test(s)) return null;
+  const core = s.slice(3, 12); // 9 číslic za prefixem 978
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += (10 - i) * Number(core[i]);
+  const rest = (11 - (sum % 11)) % 11;
+  const check = rest === 10 ? 'X' : String(rest);
+  const ten = core + check;
+  return isValidIsbn10(ten) ? ten : null;
 }
 
 /**

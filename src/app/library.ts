@@ -3,9 +3,18 @@
  * UI obrazovky odsud berou data a nevolají fetch ani localStorage přímo.
  */
 
-import { findByIsbn, isBookRecord, searchCatalog, CatalogError, type CatalogRecord, type CatalogSearchType } from '../core/catalog';
+import {
+  findByIsbn,
+  isBookRecord,
+  pickRecordByIsbn,
+  searchCatalog,
+  CatalogError,
+  type CatalogRecord,
+  type CatalogSearchType,
+  type SearchOptions,
+} from '../core/catalog';
 import { mapRecordToBook, describeRecord } from '../core/record';
-import { extractIsbn, toIsbn13 } from '../core/isbn';
+import { extractIsbn, stripIsbn, toIsbn13 } from '../core/isbn';
 import { LibraryStore } from '../core/store';
 import { emptyBook, type Book, type IsbnSource } from '../core/types';
 
@@ -105,12 +114,34 @@ export interface SearchHit {
   isbn13: string | null;
   isBook: boolean;
   alreadyInLibrary: boolean;
+  /** U hledání podle ISBN: záznam opravdu obsahuje hledané číslo. */
+  exactIsbn: boolean;
 }
 
 export interface SearchResult {
   hits: SearchHit[];
   message: string | null;
   status: 'ok' | 'empty' | 'error';
+}
+
+/**
+ * Záznamy pro dotaz podle ISBN (obrazovka Hledat, typ „ISBN“).
+ *
+ * Číslo se normalizuje – do katalogu nikdy nejdou pomlčky ani „ISBN 978…“,
+ * protože takový dotaz nic nenajde – a když třináctimístný tvar nic nevrátí,
+ * zkusí se ještě desetimístný (starší knihy).
+ */
+async function recordsForIsbnQuery(
+  query: string,
+  limit: number,
+  options: SearchOptions,
+): Promise<CatalogRecord[]> {
+  const digits = stripIsbn(query);
+  if (digits.length !== 10 && digits.length !== 13) {
+    return searchCatalog(query, 'ISN', { ...options, limit });
+  }
+  const { records } = await findByIsbn(query, { ...options, limit });
+  return records;
 }
 
 /**
@@ -122,11 +153,17 @@ export async function searchBooks(
   query: string,
   type: CatalogSearchType,
   limit = 20,
+  options: SearchOptions = {},
 ): Promise<SearchResult> {
   const q = (query ?? '').trim();
   if (!q) return { hits: [], message: null, status: 'empty' };
   try {
-    const records = await searchCatalog(q, type, { limit });
+    const records =
+      type === 'ISN'
+        ? await recordsForIsbnQuery(q, limit, options)
+        : await searchCatalog(q, type, { ...options, limit });
+    // Přesná shoda ISBN jde nahoru – u dohledávání vydání je to ta pravá kniha.
+    const wantedIsbn = type === 'ISN' ? toIsbn13(q) : null;
     const hits: SearchHit[] = records.map((record) => {
       const isbn13 = toIsbn13((record.isbns ?? [])[0] ?? '');
       return {
@@ -135,10 +172,13 @@ export async function searchBooks(
         isbn13,
         isBook: isBookRecord(record),
         alreadyInLibrary: isbn13 ? !!store.findByIsbn(isbn13) : false,
+        exactIsbn: wantedIsbn ? pickRecordByIsbn([record], wantedIsbn) !== null : false,
       };
     });
     // Knihy první – u hledání podle názvu chodí i mluvené slovo.
-    hits.sort((a, b) => Number(b.isBook) - Number(a.isBook));
+    hits.sort(
+      (a, b) => Number(b.exactIsbn) - Number(a.exactIsbn) || Number(b.isBook) - Number(a.isBook),
+    );
     return {
       hits,
       status: hits.length ? 'ok' : 'empty',

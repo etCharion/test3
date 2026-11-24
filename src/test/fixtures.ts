@@ -33,6 +33,67 @@ export const SAMPLE_RESPONSE: CatalogResponse = {
 export const EMPTY_RESPONSE = { resultCount: 0, status: 'OK' };
 
 /**
+ * Skutečné chování katalogu u starších knih (ověřeno proti živému API):
+ * dotaz na 9788070613436 vrátí nula záznamů, ale desetimístné 8070613432
+ * najde Saturnina. Záznam má v isbns jen desetimístný tvar.
+ */
+export const TEN_ONLY_RESPONSE: CatalogResponse = {
+  resultCount: 1,
+  records: [
+    {
+      id: 'mlp.10',
+      title: 'Saturnin',
+      authors: { primary: { 'Zdeněk Jirotka, 1911-2003': [] } },
+      publishers: ['Československý spisovatel,'],
+      placesOfPublication: ['Praha :'],
+      publicationDates: ['1993'],
+      physicalDescriptions: ['218 s.'],
+      isbns: ['80-7061-343-2'],
+      formats: ['0/BOOKS/'],
+    },
+  ],
+  status: 'OK',
+};
+
+/**
+ * Fake fetch, který odpovídá podle parametru `lookfor` v URL – pro testy
+ * záložního tvaru ISBN (první dotaz 13 číslicemi, druhý 10).
+ */
+export function routedFetch(
+  route: (lookfor: string, type: string) => unknown,
+  init: { status?: number; onRequest?: (lookfor: string, type: string) => void } = {},
+): typeof fetch {
+  return ((input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const params = new URL(url).searchParams;
+    const lookfor = params.get('lookfor') ?? '';
+    const type = params.get('type') ?? '';
+    init.onRequest?.(lookfor, type);
+    return Promise.resolve(
+      new Response(JSON.stringify(route(lookfor, type)), {
+        status: init.status ?? 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+  }) as typeof fetch;
+}
+
+/** Fake fetch, který první pokus zhavaruje (HTTP 5xx) a druhý už vrátí data. */
+export function flakyFetch(body: unknown, failTimes = 1, status = 500): typeof fetch {
+  let calls = 0;
+  return (() => {
+    calls += 1;
+    const failing = calls <= failTimes;
+    return Promise.resolve(
+      new Response(failing ? '{}' : JSON.stringify(body), {
+        status: failing ? status : 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+  }) as typeof fetch;
+}
+
+/**
  * Odpověď na dotaz podle názvu: první záznam je audiokniha jiného vydání,
  * druhý je hledaná kniha. Slouží k testu výběru správného vydání podle ISBN.
  */

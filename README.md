@@ -18,6 +18,7 @@ Data jsou uložená v `localStorage` zařízení.
 | Ruční vyplnění celé knihy | formulář, volitelně s dohledáním podle ISBN |
 | Doplňování z katalogu | `lookfor` = ISBN / název / autor / „vše“ (`AllFields`) |
 | Ochrana proti záměně vydání | dotaz `limit=10`, vybírá se záznam, jehož `isbns` obsahuje hledané ISBN |
+| Dohledání starších knih | když 13 číslic nic nenajde, zkusí se desetimístný tvar ISBN |
 | Duplicity | kontrola podle ISBN-13 před uložením |
 | Přírůstková čísla | prefix + rostoucí číslo + doplnění nulami |
 | Export | `.xlsx` (16 sloupců, hlavička, filtr, zamrzlý první řádek) a `.csv` s BOM |
@@ -29,7 +30,7 @@ Data jsou uložená v `localStorage` zařízení.
 ```bash
 npm install
 npm run dev          # http://localhost:5173
-npm test             # 60 jednotkových testů (katalog se testuje proti ukázkové odpovědi)
+npm test             # 82 jednotkových testů (katalog se testuje proti ukázkové odpovědi)
 npm run typecheck
 npm run build        # dist/ – statické soubory
 npm run preview      # náhled produkčního buildu
@@ -85,14 +86,17 @@ z prohlížeče, bez hlaviček.
 - `lookfor` hledaný text, `type` = `ISN | Title | Author | AllFields | adv_search_nbn`,
   `limit` 0–100, `field[]` se opakuje pro každé pole (bez něj nepřijde nakladatel,
   rok, ISBN ani ČNB).
-- ISBN se **vždy posílá jako 13 číslic bez pomlček** – desetimístné ISBN novější
-  knihu nenajde.
+- ISBN se posílá **jako 13 číslic bez pomlček** (desetimístné ISBN novější knihu
+  nenajde). Když dotaz nic nenajde, zkusí se ještě **desetimístný tvar** – část
+  starších knih je v katalogu jen pod ním: `9788070613436` nic nenajde,
+  `8070613432` vrátí Saturnina. Ověřeno proti živému API.
 - Nenalezeno = HTTP 200, `resultCount: 0` a **chybějící** klíč `records`, proto
   se čte jako `data.records ?? []`.
 - Autoři přicházejí jako klíče objektu („Jméno Příjmení, roky“), `primary` = autor,
   `secondary` = překladatel/ilustrátor.
 - Časový limit dotazu je 8 s (`AbortController`); chyby se v UI rozliší na
-  „neodpovídá“, „nedostupný“ a „nic nenalezeno“.
+  „neodpovídá“, „nedostupný“ a „nic nenalezeno“. Na HTTP 5xx (katalog občas
+  zhavaruje i na platný dotaz) jde jeden pokus navíc.
 
 ## Testy
 

@@ -4,6 +4,7 @@ import {
   formatIsbn,
   isbn10To13,
   isbn13CheckDigit,
+  isbn13ToIsbn10,
   isValidIsbn10,
   isValidIsbn13,
   isValidIssn,
@@ -106,5 +107,29 @@ describe('pomocné', () => {
   it('pozná, že dotaz má smysl poslat jako číslo', () => {
     expect(looksLikeIsbnQuery('978-80-257-0367-0')).toBe(true);
     expect(looksLikeIsbnQuery('Saturnin')).toBe(false);
+  });
+});
+
+describe('převod ISBN-13 na ISBN-10', () => {
+  it('z třináctimístného tvaru udělá desetimístný se správnou kontrolní číslicí', () => {
+    expect(isbn13ToIsbn10('9788070613436')).toBe('8070613432');
+    expect(isbn13ToIsbn10('978-80-202-0468-4')).toBe('8020204687');
+    expect(isbn13ToIsbn10('9788025703670')).toBe('8025703673');
+  });
+
+  it('u prefixu 979 desetimístný tvar neexistuje', () => {
+    expect(isbn13ToIsbn10('9791090636071')).toBeNull();
+  });
+
+  it('cesta tam a zpět vrátí stejné číslo', () => {
+    for (const isbn13 of ['9788070613436', '9788020204684', '9788000014623']) {
+      expect(isbn10To13(isbn13ToIsbn10(isbn13)!)).toBe(isbn13);
+    }
+  });
+
+  it('z nesmyslu vrátí null', () => {
+    expect(isbn13ToIsbn10('')).toBeNull();
+    expect(isbn13ToIsbn10(null)).toBeNull();
+    expect(isbn13ToIsbn10('80-202-0468-7')).toBeNull();
   });
 });
