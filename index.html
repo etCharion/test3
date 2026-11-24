@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
+    />
+    <title>Skener knihovny – ISBN do evidence</title>
+    <meta
+      name="description"
+      content="Načte ISBN čárovým kódem nebo ručně, doplní údaje z katalogu Knihovny.cz a knihovnu vyexportuje do Excelu."
+    />
+    <meta name="theme-color" content="#0e1116" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Skener" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  </head>
+  <body>
+    <div id="app">
+      <noscript>
+        <p style="padding: 24px; color: #e7ecf3; background: #0e1116">
+          Aplikace potřebuje zapnutý JavaScript – skenování čárových kódů a doplňování
+          z katalogu bez něj nejde.
+        </p>
+      </noscript>
+    </div>
+    <div id="toast-host"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

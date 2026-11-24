@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skener knihovny</title>
+    <!--
+      GitHub Pages nemá přepisování cest. Aplikace používá hash routing, takže
+      sem doputuje jen nesmyslná adresa (např. /repo/knihovna) – pošleme
+      uživatele na úvodní stránku aplikace.
+    -->
+    <script>
+      location.replace('./');
+    </script>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: #0e1116;
+        color: #e7ecf3;
+        font-family: system-ui, sans-serif;
+      }
+      a {
+        color: #35d07f;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Přesouvám na <a href="./">Skener knihovny</a>…</p>
+  </body>
+</html>

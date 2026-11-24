@@ -1,0 +1,47 @@
+{
+  "id": "./",
+  "name": "Skener knihovny",
+  "short_name": "Skener",
+  "description": "Načte ISBN čárovým kódem nebo ručně, doplní údaje z katalogu Knihovny.cz a knihovnu vyexportuje do Excelu.",
+  "lang": "cs",
+  "dir": "ltr",
+  "start_url": "./#/scan",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1116",
+  "theme_color": "#0e1116",
+  "categories": ["books", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Skenovat ISBN",
+      "url": "./#/scan",
+      "description": "Otevřít kameru a načíst čárový kód"
+    },
+    {
+      "name": "Knihovna",
+      "url": "./#/list",
+      "description": "Seznam knih a export do Excelu"
+    }
+  ]
+}
